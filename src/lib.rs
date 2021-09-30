@@ -6,7 +6,7 @@ use core::{
     ops::{Deref, DerefMut},
     str::FromStr,
 };
-#[cfg(test)]
+#[cfg(any(feature = "arbitrary", test))]
 use proptest_derive::Arbitrary;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -15,7 +15,7 @@ base64_serde_type!(Base64StandardSerde, STANDARD);
 /// Base64 newtype wrapper using `STANDARD` encoding. May be generally treated as if it
 /// were a primitive Vec, e.g. `&Base64` will provide `&[u8]`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(test, derive(Arbitrary))]
+#[cfg_attr(any(feature = "arbitrary", test), derive(Arbitrary))]
 pub struct Base64(pub Vec<u8>);
 impl Deref for Base64 {
     type Target = Vec<u8>;
@@ -105,7 +105,7 @@ impl TryFrom<Base64> for [u8; 32] {
 base64_serde_type!(UrlBase64Serde, URL_SAFE);
 /// Base64 newtype wrapper using `URL_SAFE` encoding. Used for Azure requests and responses.
 #[derive(Debug, PartialEq, Eq, Default)]
-#[cfg_attr(test, derive(Arbitrary))]
+#[cfg_attr(any(feature = "arbitrary", test), derive(Arbitrary))]
 pub struct UrlBase64(pub Vec<u8>);
 impl Serialize for UrlBase64 {
     fn serialize<S>(
