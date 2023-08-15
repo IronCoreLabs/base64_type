@@ -1,13 +1,13 @@
 [package]
 name = "base64_type"
-authors = [ "IronCore Labs <code@ironcorelabs.com>" ]
-version = "0.1.0"
-edition = "2018"
+authors = ["IronCore Labs <code@ironcorelabs.com>"]
+version = "0.1.1"
+edition = "2021"
 resolver = "2"
 
 [dependencies]
-base64 = "0.13"
-base64-serde = "0.6"
+base64 = "0.21"
+base64-serde = "0.7"
 bytes = "1"
 proptest = { version = "1.0", optional = true }
 proptest-derive = { version = "0.3", optional = true }
@@ -19,4 +19,4 @@ proptest-derive = "0.3"
 serde_json = "1"
 
 [features]
-arbitrary = [ "proptest", "proptest-derive" ]
+arbitrary = ["proptest", "proptest-derive"]
