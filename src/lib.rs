@@ -1,4 +1,7 @@
-use base64::{STANDARD, URL_SAFE};
+use base64::{
+    engine::general_purpose::{STANDARD, URL_SAFE},
+    Engine,
+};
 use base64_serde::base64_serde_type;
 use bytes::Bytes;
 use core::{
@@ -50,7 +53,7 @@ impl<'de> Deserialize<'de> for Base64 {
 impl FromStr for Base64 {
     type Err = base64::DecodeError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        base64::decode_config(s, STANDARD).map(Base64)
+        STANDARD.decode(s).map(Base64)
     }
 }
 impl From<&[u8]> for Base64 {
@@ -75,7 +78,7 @@ impl From<UrlBase64> for Base64 {
 }
 impl ToString for Base64 {
     fn to_string(&self) -> String {
-        base64::encode_config(&self.0, STANDARD)
+        STANDARD.encode(&self.0)
     }
 }
 impl From<Base64> for Bytes {
@@ -159,7 +162,7 @@ mod tests {
         fn deserialize_known() {
             // Azure sample
             let base64_str = "LYo7WN8-DSYHqZa9PxIVyiJpMDWyj6P4irM1QUFM3fI_pRfgbXSCNP_CWt0x49GgIFRQaN0iShf3IlxMDsLRLsKM2c5fdABpVi6L56Rfu4Vn9htGS6lXfm1Ylvds6ywcI9E6brLIMSHoJYCi8o0pH4bH_vWWD-8TEBfBm-lEtT2k2fyznMpvBEznQrixNifNS3obWmZv5VBcUBzbYJ-2QHfrOiufe9Xj8VisjNvOzsEMPOETEVFnMEY-OBY4fV1JifFtt-dR6Cst3JuHq3yeRiLVX_EQmyZZZrzCJOglcOxt85qXM5mlOnrz3M2vRQju1BYb-Cgmdho9Dg8gmKTdeQ";
-            let b64 = base64::decode_config(base64_str, URL_SAFE).expect("decode worked");
+            let b64 = URL_SAFE.decode(base64_str).expect("decode worked");
             let de: UrlBase64 =
                 serde_json::from_str(&format!("\"{}\"", base64_str)).expect("deserialize worked");
             assert_eq!(de.0, b64);
@@ -220,7 +223,7 @@ mod tests {
         #[test]
         fn deserialize_known() {
             let base64_str = "Cr4BCrgBAQIDAHj0ZREHq1bONJuR5ImNOlC8TTbXrFSZ5ETcue/j52IG8AEQ9A1ynzkO7801Yub6KEL/AAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMppr+vkkDynbG8fbNAgEQgDsUjU+Hr6ietkfUzpkFwf+yF5BRS7+7RHRPlQvOHiyY8Ca91GOr+QP/4qTKnJ8w5PTV6Rx5r59aByPVqxCPAw==";
-            let b64 = base64::decode_config(base64_str, STANDARD).expect("decode worked");
+            let b64 = STANDARD.decode(base64_str).expect("decode worked");
             let de: Base64 =
                 serde_json::from_str(&format!("\"{}\"", base64_str)).expect("deserialize worked");
             assert_eq!(de.0, b64);
