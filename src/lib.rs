@@ -26,6 +26,12 @@ impl Deref for Base64 {
         &self.0
     }
 }
+
+impl AsRef<[u8]> for Base64 {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_slice()
+    }
+}
 impl DerefMut for Base64 {
     fn deref_mut(&mut self) -> &mut Vec<u8> {
         &mut self.0
