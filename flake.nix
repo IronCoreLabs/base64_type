@@ -1,5 +1,5 @@
 {
-  description = "Vector search POC";
+  description = "Base64 type";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
