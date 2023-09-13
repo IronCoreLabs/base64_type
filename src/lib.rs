@@ -1,5 +1,6 @@
 use base64::{
-    engine::general_purpose::{STANDARD, URL_SAFE},
+    alphabet,
+    engine::{general_purpose::PAD, GeneralPurpose},
     Engine,
 };
 use base64_serde::base64_serde_type;
@@ -9,13 +10,21 @@ use core::{
     ops::{Deref, DerefMut},
     str::FromStr,
 };
-#[cfg(any(feature = "arbitrary", test))]
-use proptest_derive::Arbitrary;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+#[cfg(any(feature = "arbitrary", test))]
+use proptest_derive::Arbitrary;
+
+// From base64 v0.13 -> v0.20 upgrade, STANDARD now fails decoding if the padding is "incorrect".
+// We don't know here where this Base64 may be coming from, so we want to allow it.
+pub const STANDARD_INDIFFERENT_PAD: GeneralPurpose = GeneralPurpose::new(
+    &alphabet::STANDARD,
+    PAD.with_decode_padding_mode(base64::engine::DecodePaddingMode::Indifferent),
+);
+
 // use official base64_serde crate to generate a type with correct serde implementations.
-base64_serde_type!(Base64StandardSerde, STANDARD);
-/// Base64 newtype wrapper using `STANDARD` encoding. May be generally treated as if it
+base64_serde_type!(Base64StandardSerde, STANDARD_INDIFFERENT_PAD);
+/// Base64 newtype wrapper using `STANDARD_INDIFFERENT_PAD` encoding. May be generally treated as if it
 /// were a primitive Vec, e.g. `&Base64` will provide `&[u8]`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(any(feature = "arbitrary", test), derive(Arbitrary))]
@@ -59,7 +68,7 @@ impl<'de> Deserialize<'de> for Base64 {
 impl FromStr for Base64 {
     type Err = base64::DecodeError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        STANDARD.decode(s).map(Base64)
+        STANDARD_INDIFFERENT_PAD.decode(s).map(Base64)
     }
 }
 impl From<&[u8]> for Base64 {
@@ -84,7 +93,7 @@ impl From<UrlBase64> for Base64 {
 }
 impl ToString for Base64 {
     fn to_string(&self) -> String {
-        STANDARD.encode(&self.0)
+        STANDARD_INDIFFERENT_PAD.encode(&self.0)
     }
 }
 impl From<Base64> for Bytes {
@@ -110,9 +119,16 @@ impl TryFrom<Base64> for [u8; 32] {
     }
 }
 
+// From base64 v0.13 -> v0.20 upgrade, URL_SAFE now fails decoding if the padding is "incorrect".
+// We don't know here where this Base64 may be coming from, so we want to allow it.
+pub const URL_SAFE_INDIFFERENT_PAD: GeneralPurpose = GeneralPurpose::new(
+    &alphabet::URL_SAFE,
+    PAD.with_decode_padding_mode(base64::engine::DecodePaddingMode::Indifferent),
+);
+
 // use official base64_serde crate to generate a type with correct serde implementations.
-base64_serde_type!(UrlBase64Serde, URL_SAFE);
-/// Base64 newtype wrapper using `URL_SAFE` encoding. Used for Azure requests and responses.
+base64_serde_type!(UrlBase64Serde, URL_SAFE_INDIFFERENT_PAD);
+/// Base64 newtype wrapper using `URL_SAFE_INDIFFERENT_PAD` encoding. Used for Azure requests and responses.
 #[derive(Debug, PartialEq, Eq, Default)]
 #[cfg_attr(any(feature = "arbitrary", test), derive(Arbitrary))]
 pub struct UrlBase64(pub Vec<u8>);
@@ -166,9 +182,11 @@ mod tests {
 
         #[test]
         fn deserialize_known() {
-            // Azure sample
-            let base64_str = "LYo7WN8-DSYHqZa9PxIVyiJpMDWyj6P4irM1QUFM3fI_pRfgbXSCNP_CWt0x49GgIFRQaN0iShf3IlxMDsLRLsKM2c5fdABpVi6L56Rfu4Vn9htGS6lXfm1Ylvds6ywcI9E6brLIMSHoJYCi8o0pH4bH_vWWD-8TEBfBm-lEtT2k2fyznMpvBEznQrixNifNS3obWmZv5VBcUBzbYJ-2QHfrOiufe9Xj8VisjNvOzsEMPOETEVFnMEY-OBY4fV1JifFtt-dR6Cst3JuHq3yeRiLVX_EQmyZZZrzCJOglcOxt85qXM5mlOnrz3M2vRQju1BYb-Cgmdho9Dg8gmKTdeQ";
-            let b64 = URL_SAFE.decode(base64_str).expect("decode worked");
+            // Azure sample with "invalid" padding
+            let base64_str = "gSrx4bC5FDH5V5g4bh49ODgnwipJVBdComMDAJLREo1oVDYSSjGH9DmEyVGGfQJvIhz6uUFxkDpkpKB2CdOrU04EeesSdxarx5IQ_nGd9lsmbpEQKWO1jO7eCuoQS_ghY2kXapg0ZF06cU-gAdK-YxolhyhoDTGuVUqSwy7XZQcfo1--fICqyrKJm5u3E8aD5dk2AgrUxcJ435zXBSKAEs8YZyxK7dlmKMzBmHgswl7o8fjtDiYeN0rp5vjacx42FBKqViouMH3AE9CZjE4IZ_wkOxxwmuEPOSC2hNNemsVZ8gcO7-tc4ca2Mx8GIFbvTJHj3aCBTCpo_nrQeHGeiw";
+            let b64 = URL_SAFE_INDIFFERENT_PAD
+                .decode(base64_str)
+                .expect("decode worked");
             let de: UrlBase64 =
                 serde_json::from_str(&format!("\"{}\"", base64_str)).expect("deserialize worked");
             assert_eq!(de.0, b64);
@@ -229,7 +247,9 @@ mod tests {
         #[test]
         fn deserialize_known() {
             let base64_str = "Cr4BCrgBAQIDAHj0ZREHq1bONJuR5ImNOlC8TTbXrFSZ5ETcue/j52IG8AEQ9A1ynzkO7801Yub6KEL/AAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMppr+vkkDynbG8fbNAgEQgDsUjU+Hr6ietkfUzpkFwf+yF5BRS7+7RHRPlQvOHiyY8Ca91GOr+QP/4qTKnJ8w5PTV6Rx5r59aByPVqxCPAw==";
-            let b64 = STANDARD.decode(base64_str).expect("decode worked");
+            let b64 = STANDARD_INDIFFERENT_PAD
+                .decode(base64_str)
+                .expect("decode worked");
             let de: Base64 =
                 serde_json::from_str(&format!("\"{}\"", base64_str)).expect("deserialize worked");
             assert_eq!(de.0, b64);
