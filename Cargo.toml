@@ -1,9 +1,16 @@
 [package]
 name = "base64_type"
+version = "0.1.2-pre.0"
+description = "Simple Rust type wrapper for Vec<u8> that uses base64 for serialization"
 authors = ["IronCore Labs <code@ironcorelabs.com>"]
-version = "0.1.2"
+categories = ["rust-patterns"]
+license = "AGPL-3.0-only"
+documentation = "https://docs.rs/base64_type"
+readme = "README.md"
+repository = "https://github.com/IronCoreLabs/base64_type"
+keywords = ["base64"]
 edition = "2021"
-resolver = "2"
+rust-version = "1.70.0"
 
 [dependencies]
 base64 = "0.21"
