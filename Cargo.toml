@@ -14,7 +14,7 @@ rust-version = "1.70.0"
 
 [dependencies]
 base64 = "0.22"
-base64-serde = "0.7"
+base64-serde = "0.8"
 bytes = "1"
 proptest = { version = "1.0", optional = true }
 proptest-derive = { version = "0.5", optional = true }
