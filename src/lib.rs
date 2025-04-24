@@ -14,6 +14,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[cfg(any(feature = "arbitrary", test))]
 use proptest_derive::Arbitrary;
+use std::fmt::Display;
 
 // From base64 v0.13 -> v0.20 upgrade, STANDARD now fails decoding if the padding is "incorrect".
 // We don't know here where this Base64 may be coming from, so we want to allow it.
@@ -91,9 +92,9 @@ impl From<UrlBase64> for Base64 {
         Base64(value.0)
     }
 }
-impl ToString for Base64 {
-    fn to_string(&self) -> String {
-        STANDARD_INDIFFERENT_PAD.encode(&self.0)
+impl Display for Base64 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", STANDARD_INDIFFERENT_PAD.encode(&self.0))
     }
 }
 impl From<Base64> for Bytes {
