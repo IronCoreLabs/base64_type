@@ -17,12 +17,12 @@ base64 = "0.22"
 base64-serde = "0.8"
 bytes = "1"
 proptest = { version = "1.0", optional = true }
-proptest-derive = { version = "0.5", optional = true }
+proptest-derive = { version = "0.6", optional = true }
 serde = "1"
 
 [dev-dependencies]
 proptest = "1.0"
-proptest-derive = "0.5"
+proptest-derive = "0.6"
 serde_json = "1"
 
 [features]
