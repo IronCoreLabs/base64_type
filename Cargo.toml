@@ -12,6 +12,9 @@ keywords = ["base64"]
 edition = "2021"
 rust-version = "1.83.0"
 
+[features]
+arbitrary = ["proptest", "proptest-derive"]
+
 [dependencies]
 base64 = "0.22"
 base64-serde = "0.8"
@@ -24,6 +27,3 @@ serde = "1"
 proptest = "1.0"
 proptest-derive = "0.7"
 serde_json = "1"
-
-[features]
-arbitrary = ["proptest", "proptest-derive"]
