@@ -9,8 +9,8 @@ documentation = "https://docs.rs/base64_type"
 readme = "README.md"
 repository = "https://github.com/IronCoreLabs/base64_type"
 keywords = ["base64"]
-edition = "2021"
-rust-version = "1.83.0"
+edition = "2024"
+rust-version = "1.87.0"
 
 [features]
 arbitrary = ["proptest", "proptest-derive"]
