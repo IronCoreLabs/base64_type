@@ -1,7 +1,6 @@
 use base64::{
-    alphabet,
-    engine::{general_purpose::PAD, GeneralPurpose},
-    Engine,
+    Engine, alphabet,
+    engine::{GeneralPurpose, general_purpose::PAD},
 };
 use base64_serde::base64_serde_type;
 use bytes::Bytes;
